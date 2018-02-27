@@ -1,13 +1,17 @@
 #!/usr/bin/python3
 # ensure joker and jtool downloaded and in path - symlink if needed
 import os
+import sys
 import json
 import requests
 import zipfile
 import subprocess
 import shutil
 
-ios_version = '11.1'
+if len(sys.argv) != 2:
+    print('Invoke with desired fw version. (eg. ./offset.py 11.1)')
+    sys.exit()
+ios_version = sys.argv[1]
 firmwares = {}
 firmwares_url = {}  # {device: {size: link}, ...}
 device_offset_dict = {}
@@ -52,7 +56,6 @@ for device in ota_json.keys():
                 if '_kernproc' in line or '_rootvnode' in line:
                     device_offset_dict[device].update(
                         {f'{line.split()[1]} {line.split()[2]}': line.split()[0]})
-            print(json.dumps(device_offset_dict, indent=4))
             os.remove(f'{os.getcwd()}/{filename}')  # remove zip
             try:
                 os.remove('/tmp/kernel')  # remove /tmp/kernel
@@ -61,3 +64,4 @@ for device in ota_json.keys():
             shutil.rmtree(f'{os.getcwd()}/{filename.split(".")[0]}')  # remove unzipped folder
         except:
             continue
+print(json.dumps(device_offset_dict, indent=4))
